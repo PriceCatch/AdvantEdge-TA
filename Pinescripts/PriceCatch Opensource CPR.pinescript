@@ -1,0 +1,43 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © PriceCatch
+// above lines must not be changed.
+
+
+//@version=6
+indicator(title="PriceCatch Opensource CPR", shorttitle="PriceCatch Opensource CPR", overlay=true)
+
+//cpr calc
+pivot = (high + low + close) / 3
+btm_chnl = (high + low) / 2
+top_chnl = pivot - btm_chnl + pivot
+
+[dpivot, dbtmchnl, dtopchnl] = request.security(syminfo.tickerid, 'D', [pivot[1], btm_chnl[1], top_chnl[1]], barmerge.gaps_off, barmerge.lookahead_on)
+
+var line ln_tc_pd = na 
+var line ln_bc_pd = na 
+var line ln_tc = na
+var line ln_bc = na
+
+var box bx_cpr = na 
+var box bx_prev_cpr = na 
+var int prev_bar_index = na
+var int curr_bar_index = na 
+if timeframe.change('D')
+    prev_bar_index := curr_bar_index 
+    curr_bar_index := bar_index
+    dist = curr_bar_index - prev_bar_index
+
+    box.delete(bx_cpr)
+    bx_cpr := box.new(curr_bar_index, dbtmchnl, curr_bar_index + dist, dtopchnl, bgcolor = #2495eb70, border_width = 0)
+
+    box.delete(bx_prev_cpr)
+    bx_prev_cpr := box.new(prev_bar_index, dbtmchnl[1], curr_bar_index, dtopchnl[1], bgcolor = #b7b7b77b, border_color = #b7b7b77b, border_width = 1)
+
+
+    ln_bc_pd := line.new(curr_bar_index, dbtmchnl[1], curr_bar_index + dist, dbtmchnl[1], color = #7d7d7d)
+    ln_tc_pd := line.new(curr_bar_index, dtopchnl[1], curr_bar_index + dist, dtopchnl[1], color = #7d7d7d)
+    line.delete(ln_tc_pd[1])
+    line.delete(ln_bc_pd[1])
+    
+
+//EOF
