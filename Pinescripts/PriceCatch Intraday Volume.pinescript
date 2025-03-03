@@ -1,0 +1,107 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © PriceCatch
+// You must credit PriceCatch if you modify this code or use it in your scripts.
+
+//@version=6
+indicator(title = 'PriceCatch-Intraday Volume', shorttitle = 'PriceCatch-Intraday Volume', overlay = true)
+if not timeframe.isintraday
+    runtime.error('Please change to intraday time-frame chart')
+
+var float _bullVol = na
+var int _bullCandles = na
+var float _bullttv = na
+
+
+var float _bearVol = na
+var int _bearCandles = na
+var float _bearttv = na
+
+
+_newDay = timeframe.change('D')
+
+if _newDay
+
+    _bearVol := 0
+    _bearCandles := 0
+    _bearttv := 0
+
+    _bullVol := 0
+    _bullCandles := 0
+    _bullttv := 0
+    _bullttv
+
+//
+
+if barstate.isconfirmed
+
+    buy_distance = high - low
+    sell_distance = open - low + high - close
+    tot_distance = buy_distance + sell_distance
+    buy_volume = buy_distance / tot_distance * volume
+    sell_volume = sell_distance / tot_distance * volume
+
+    _bullttv := _bullttv + close * buy_volume
+    _bullVol := _bullVol + buy_volume
+    _bearttv := _bearttv + close * sell_volume
+    _bearVol := _bearVol + sell_volume
+
+    if close > open
+        _bullCandles := _bullCandles + 1
+        _bullCandles
+    else //if open >= close   
+        _bearCandles := _bearCandles + 1
+        _bearCandles
+
+var string _suffix = na
+// convert trade value to crores
+if syminfo.country == 'IN'
+    _bullttv := _bullttv / 10000000
+    _bearttv := _bearttv / 10000000
+    _suffix := 'Cr.'
+    _suffix
+else
+    _bullttv := _bullttv / 1000000000
+    _bearttv := _bearttv / 1000000000
+    _suffix := 'B.'
+    _suffix
+    // 
+
+
+// print results
+// Volume Info Panel Section
+tblPos = input.string(title = 'Position on Chart', defval = 'Bottom Center', options = ['Top Left', 'Top Right', 'Bottom Left', 'Bottom Center', 'Bottom Right', 'Middle Left', 'Middle Right'], group = 'Information Panel')
+tblposition = tblPos == 'Top Left' ? position.top_left : tblPos == 'Top Right' ? position.top_right : tblPos == 'Bottom Left' ? position.bottom_left : tblPos == 'Bottom Center' ? position.bottom_center : tblPos == 'Bottom Right' ? position.bottom_right : tblPos == 'Middle Left' ? position.middle_left : position.middle_right
+
+tblBorderColor = input(title = 'Border Color', defval = #636363, group = 'Information Panel')
+
+title1_bgColor = input(title = 'Title Background', defval = #004074, group = 'Information Panel')
+title1_textColor = input(title = 'Title Text', defval = #7AC3ff, group = 'Information Panel')
+
+_downBgColor = input(title = 'Down Background Color', defval = #000000, group = 'Information Panel')
+_downTextColor = input(title = 'Down Text Color', defval = color.red, group = 'Information Panel')
+
+_upBgColor = input(title = 'Up Background Color', defval = #000000, group = 'Information Panel')
+_upTextColor = input(title = 'Up Text Color', defval = color.blue, group = 'Information Panel')
+
+
+var table resultsTable = na
+
+resultsTable := table.new(position = tblposition, columns = 4, rows = 3, bgcolor = #ffffff, border_width = 0, frame_color = tblBorderColor, frame_width = 2)
+
+
+table.cell(resultsTable, column = 0, row = 0, text = '', text_color = title1_textColor, text_halign = text.align_center, text_valign = text.align_center, bgcolor = title1_bgColor, text_size = size.normal)
+table.cell(resultsTable, column = 1, row = 0, text = 'Volume', text_color = title1_textColor, text_halign = text.align_center, text_valign = text.align_center, bgcolor = title1_bgColor, text_size = size.normal)
+table.cell(resultsTable, column = 2, row = 0, text = 'Candles', text_color = title1_textColor, text_halign = text.align_center, text_valign = text.align_center, bgcolor = title1_bgColor, text_size = size.normal)
+table.cell(resultsTable, column = 3, row = 0, text = 'TradeVal', text_color = title1_textColor, text_halign = text.align_center, text_valign = text.align_center, bgcolor = title1_bgColor, text_size = size.normal)
+
+table.cell(resultsTable, column = 0, row = 2, text = 'Up', text_color = _upTextColor, text_halign = text.align_center, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal)
+table.cell(resultsTable, column = 1, row = 2, text = str.tostring(_bullVol,format.volume), text_color = _upTextColor, text_halign = text.align_center, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal)
+table.cell(resultsTable, column = 2, row = 2, text = str.tostring(_bullCandles), text_color = _upTextColor, text_halign = text.align_center, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal)
+table.cell(resultsTable, column = 3, row = 2, text = str.tostring(_bullttv, "#######.##") + _suffix, text_color = _upTextColor, text_halign = text.align_center, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal)
+
+
+table.cell(resultsTable, column = 0, row = 1, text = 'Down', text_color = _downTextColor, text_halign = text.align_center, text_valign = text.align_center, bgcolor = _downBgColor, text_size = size.normal)
+table.cell(resultsTable, column = 1, row = 1, text = str.tostring(_bearVol,format.volume), text_color = _downTextColor, text_halign = text.align_center, text_valign = text.align_center, bgcolor = _downBgColor, text_size = size.normal)
+table.cell(resultsTable, column = 2, row = 1, text = str.tostring(_bearCandles), text_color = _downTextColor, text_halign = text.align_center, text_valign = text.align_center, bgcolor = _downBgColor, text_size = size.normal)
+table.cell(resultsTable, column = 3, row = 1, text = str.tostring(_bearttv,'#######.##') + _suffix, text_color = _downTextColor, text_halign = text.align_center, text_valign = text.align_center, bgcolor = _downBgColor, text_size = size.normal)
+
