@@ -2,7 +2,6 @@
 // © PriceCatch
 // You must credit PriceCatch if you modify this code or use it in your scripts.
 
-
 //@version=6
 indicator(title="PriceCatch Opensource CPR", shorttitle="PriceCatch Opensource CPR", overlay=true)
 
