@@ -1,0 +1,131 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © PriceCatch
+// You must credit PriceCatch if you modify this code or use it in your scripts.
+
+//@version=6
+indicator("PriceCatch Stock Range Binning-v1", max_bars_back = 4000)
+if not timeframe.isdaily
+    runtime.error("Please change to daily timeframe to get the results.")
+
+
+nlen = input.int(2000, title="No.of Trading Days",minval=100)
+var int minus20 = na 
+var int minus15 = na 
+var int minus10 = na 
+var int minus05 = na 
+var int minus03 = na 
+var int minus01 = na 
+var int zero0 = na 
+var int plus20 = na 
+var int plus15 = na 
+var int plus10 = na 
+var int plus5 = na 
+var int plus3 = na 
+var int plus1 = na
+
+plus20 := 0
+plus15 := 0
+plus10 := 0
+plus5 := 0
+plus3 :=0
+plus1 := 0
+
+minus01 := 0
+minus03 := 0
+minus05 := 0
+minus10 := 0
+minus15 := 0
+minus20 := 0
+
+// do it for a range of 4000 trading days.
+chngprcnt = request.security("","",ta.roc(close,1))
+for i = 0 to nlen
+    if chngprcnt[i] > 15 and chngprcnt[i] <= 20
+        plus20 += 1
+    if chngprcnt[i] > 10 and chngprcnt[i] <= 15
+        plus15 += 1
+    if chngprcnt[i] > 5 and chngprcnt[i] <= 10
+        plus10 += 1
+    if chngprcnt[i] > 3 and chngprcnt[i] <= 5
+        plus5 += 1
+    if chngprcnt[i] > 1 and chngprcnt[i] <= 3
+        plus3 += 1
+    if chngprcnt[i] > 0 and chngprcnt[i] <= 1
+        plus1 += 1
+    if chngprcnt[i] > -1 and chngprcnt[i] <= 0
+        minus01 += 1
+    if chngprcnt[i] > -3 and chngprcnt[i] <= -1
+        minus03 += 1
+    if chngprcnt[i] > -5 and chngprcnt[i] <= -3
+        minus05 += 1
+    if chngprcnt[i] > -10 and chngprcnt[i] <= -5
+        minus10 += 1
+    if chngprcnt[i] > -15 and chngprcnt[i] <= -10
+        minus15 += 1
+    if chngprcnt[i] > -20 and chngprcnt[i] <= -15
+        minus20 += 1
+
+
+
+
+
+// print results
+// Volume Info Panel Section
+tblPos = input.string(title = 'Position on Chart', defval = 'Bottom Center', options = ['Top Left', 'Top Right', 'Bottom Left', 'Bottom Center', 'Bottom Right', 'Middle Left', 'Middle Right'], group = 'Information Panel')
+tblposition = tblPos == 'Top Left' ? position.top_left : tblPos == 'Top Right' ? position.top_right : tblPos == 'Bottom Left' ? position.bottom_left : tblPos == 'Bottom Center' ? position.bottom_center : tblPos == 'Bottom Right' ? position.bottom_right : tblPos == 'Middle Left' ? position.middle_left : position.middle_right
+
+tblBorderColor = input(title = 'Border Color', defval = #636363, group = 'Information Panel')
+
+title1_bgColor = input(title = 'Title Background', defval = #004074, group = 'Information Panel')
+title1_textColor = input(title = 'Title Text', defval = #7AC3ff, group = 'Information Panel')
+
+_upBgColor = input(title = 'Up Background Color', defval = #000000, group = 'Information Panel')
+_upTextColor = input(title = 'Up Text Color', defval = #daeefe, group = 'Information Panel')
+
+
+var table resultsTable = na
+
+resultsTable := table.new(position = tblposition, columns = 2, rows = 13, bgcolor = #ffffff, border_width = 0, frame_color = tblBorderColor, frame_width = 2)
+
+_info_text_color = _upTextColor
+_info_bg_color = _upBgColor
+
+
+
+table.cell(resultsTable, column = 0, row = 0, text = "Change% Band", text_color = title1_textColor, text_halign = text.align_left, text_valign = text.align_center, bgcolor = title1_bgColor, text_size = size.normal, text_font_family = font.family_monospace)
+table.cell(resultsTable, column = 1, row = 0, text = "Occurrence\nNo.of Times", text_color = title1_textColor, text_halign = text.align_right, text_valign = text.align_center, bgcolor = title1_bgColor, text_size = size.normal, text_font_family = font.family_monospace)
+table.cell(resultsTable, column = 0, row = 1, text = "15 - 20", text_color = _upTextColor, text_halign = text.align_left, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+table.cell(resultsTable, column = 1, row = 1, text = str.tostring(plus20, '#####'), text_color = _upTextColor, text_halign = text.align_right, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+table.cell(resultsTable, column = 0, row = 2, text = "10 - 15", text_color = _upTextColor, text_halign = text.align_left, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+table.cell(resultsTable, column = 1, row = 2, text = str.tostring(plus15, '#####'), text_color = _upTextColor, text_halign = text.align_right, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+
+
+table.cell(resultsTable, column = 0, row = 3, text = '5 - 10', text_color = _upTextColor, text_halign = text.align_left, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+table.cell(resultsTable, column = 1, row = 3, text = str.tostring(plus10, '#####'), text_color = _upTextColor, text_halign = text.align_right, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+table.cell(resultsTable, column = 0, row = 4, text = '3 - 5', text_color = _upTextColor, text_halign = text.align_left, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+table.cell(resultsTable, column = 1, row = 4, text = str.tostring(plus5, '#####'), text_color = _upTextColor, text_halign = text.align_right, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+table.cell(resultsTable, column = 0, row = 5, text = '1 - 3', text_color = _upTextColor, text_halign = text.align_left, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+table.cell(resultsTable, column = 1, row = 5, text = str.tostring(plus3, '#####'), text_color = _upTextColor, text_halign = text.align_right, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+
+table.cell(resultsTable, column = 0, row = 6, text = '0 - 1', text_color = _upTextColor, text_halign = text.align_left, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+table.cell(resultsTable, column = 1, row = 6, text = str.tostring(plus1), text_color = _upTextColor, text_halign = text.align_right, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+
+table.cell(resultsTable, column = 0, row = 7, text = '-1 - 0', text_color = _upTextColor, text_halign = text.align_left, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+table.cell(resultsTable, column = 1, row = 7, text = str.tostring(minus01), text_color = _upTextColor, text_halign = text.align_right, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+
+table.cell(resultsTable, column = 0, row = 8, text = '-3 - -1', text_color = _upTextColor, text_halign = text.align_left, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+table.cell(resultsTable, column = 1, row = 8, text = str.tostring(minus03), text_color = _upTextColor, text_halign = text.align_right, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+
+table.cell(resultsTable, column = 0, row = 9, text = '-5 - -3', text_color = _upTextColor, text_halign = text.align_left, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+table.cell(resultsTable, column = 1, row = 9, text = str.tostring(minus05), text_color = _upTextColor, text_halign = text.align_right, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+
+table.cell(resultsTable, column = 0, row = 10, text = '-10 - -5', text_color = _upTextColor, text_halign = text.align_left, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+table.cell(resultsTable, column = 1, row = 10, text = str.tostring(minus10), text_color = _upTextColor, text_halign = text.align_right, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+
+table.cell(resultsTable, column = 0, row = 11, text = '-15 - -10', text_color = _upTextColor, text_halign = text.align_left, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+table.cell(resultsTable, column = 1, row = 11, text = str.tostring(minus15), text_color = _upTextColor, text_halign =text.align_right, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+
+table.cell(resultsTable, column = 0, row = 12, text = '-20 - -15', text_color = _upTextColor, text_halign = text.align_left, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+table.cell(resultsTable, column = 1, row = 12, text = str.tostring(minus20), text_color = _upTextColor, text_halign = text.align_right, text_valign = text.align_center, bgcolor = _upBgColor, text_size = size.normal, text_font_family = font.family_monospace)
+
+/// eof
