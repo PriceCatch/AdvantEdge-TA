@@ -1,0 +1,55 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © PriceCatch
+//@version=5
+indicator("PriceCatch Volume Analysis Fixed Range", shorttitle='PriceCatch Volume Analysis Fixed Range', overlay=true, max_bars_back=500)
+lbp = input.int(20,title="Lookback period", minval = 3, maxval=498, display=display.none, tooltip="Lookback period from current bar for Volume analysis")
+upvolbg = input.color(#0098b3, title="Up Volume", group="Volume Box Background Color", inline="xx0", display=display.none)
+dnvolbg = input.color(#e9b60d, title="Down Volume", group="Volume Box Background Color", inline="xx0", display=display.none)
+
+var float volprcnt = na 
+var startBar = 0
+var endBar = 0
+
+if barstate.islast
+    startBar := bar_index[lbp-1]
+    endBar := bar_index
+
+    float upvol = 0
+    float dnvol = 0
+    int upcount = 0 
+    int dncount = 0
+
+    var label lbl_vpfvol = na 
+    var line connectline = na 
+    for i = 0 to lbp-1
+		buy_distance = high[i] - low[i]
+		sell_distance = (open[i] - low[i]) + (high[i] - close[i])
+		tot_distance = buy_distance + sell_distance
+		buy_volume = buy_distance / tot_distance * volume[i]
+		sell_volume = sell_distance / tot_distance * volume[i]
+		upvol += buy_volume
+		dnvol += sell_volume
+			
+        if close[i] > open[i]
+            upcount += 1
+        if close[i] <= open[i]
+            dncount += 1
+
+    volprcnt := (100 * upvol / dnvol) - 100 
+    _volan_bx_color = volprcnt > 0 ? upvolbg : dnvolbg
+    _volan_ln_color = _volan_bx_color
+
+    _txt0 = "LAST " + str.tostring(lbp) + " BARS VOLUME (Vol) \n"
+    volstrength = upvol > dnvol ? "Up Vol > Down Vol " : "Up Vol < Down Vol "    
+    _txt1 = "by: " + str.tostring(volprcnt,format.percent)  + "\n" 
+	_txt2 = "(" + str.tostring(upcount)  + ")  Up Vol   : " + str.tostring(upvol, format.volume) + "\n"
+	_txt3 = "(" + str.tostring(dncount)  + ")  Down Vol : " + str.tostring(dnvol, format.volume)
+
+    finaltxt = _txt0 + volstrength + _txt1 + _txt2 + _txt3
+	ypos = math.min(low[lbp], low)
+    lbl_vpfvol := label.new(x=bar_index+1, y=ypos, text=finaltxt, color=_volan_bx_color,textcolor = #1b1b1b,text_font_family = font.family_monospace, style = label.style_label_left, textalign = text.align_left) 
+    label.delete(lbl_vpfvol[1]) 
+    connectline := line.new(startBar, ypos, endBar,ypos, style=line.style_arrow_both, color=color.new(_volan_ln_color,60))
+    line.delete(connectline[1])
+
+// eof
