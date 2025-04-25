@@ -1,0 +1,212 @@
+// This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+//@version=6
+// Author S V Sudharshan, India
+// © PriceCatch
+// You must credit PriceCatch if you modify this code or use it in your scripts.
+
+indicator(title = 'PriceCatch Intraday Range', overlay = true, max_bars_back = 5000)
+
+
+
+///////////////////////////////
+
+// update lines and labels x position
+newpos = bar_index + 10
+// get daily data
+[dopen, dhigh, dlow, dclose, dvolume] = request.security('', timeframe = 'D', expression = [open, high, low, close, volume], gaps = barmerge.gaps_off, lookahead = barmerge.lookahead_off)
+
+
+// Previous day change % marker
+ipdprcnt = input.bool(true, title = '', group = 'Previous Day Change % Level', inline = 'pd00')
+pdprcnt = input.float(defval = 5.01, minval = 5.01, maxval = 50.01, title = 'Change % Level', group = 'Previous Day Change % Level', inline = 'pd00')
+c_chng = input.color(defval = #ec407a, title = '', group = 'Previous Day Change % Level', inline = 'pd00')
+
+_pdchange = ta.change(time('D'))
+
+
+var int pdprevbar = na
+var int pdstartbar = na
+var line lnpdchnglevel = na
+var float chnglvl = na
+var float pdopen = na
+var float pdhigh = na
+var float pdlow = na
+var float pdclose = na
+
+if timeframe.change('D') 
+
+    pdcno = timeframe.isintraday ? 0 : 1
+    pdprevbar := pdstartbar[1]
+    pdstartbar := bar_index
+    pdopen := dopen[pdcno]
+    pdhigh := dhigh[pdcno]
+    pdlow := dlow[pdcno]
+    pdclose := dclose[pdcno]
+    chnglvl := dclose[pdcno] + dclose[pdcno] * pdprcnt * 0.01
+    chnglvl
+
+if ipdprcnt and timeframe.isintraday
+    line.delete(lnpdchnglevel)
+    lnpdchnglevel := line.new(pdprevbar, chnglvl, pdprevbar + 10, chnglvl, color = c_chng, style = line.style_dotted, extend = extend.none)
+    lnpdchnglevel
+
+line.set_x2(lnpdchnglevel, newpos)
+
+// previous day high to low fib
+fibhlhi = pdhigh
+fibhllo = pdlow
+fibhl618 = (pdhigh - pdlow) * 0.618 + pdlow
+fibhl382 = (pdhigh - pdlow) * 0.382 + pdlow
+fibhl236 = (pdhigh - pdlow) * 0.236 + pdlow
+
+clr_fibhl = #5e5e5e
+var line ln_fibhlhi = na
+var line ln_fibhllo = na
+var line ln_fibhl618 = na
+var line ln_fibhl382 = na
+var line ln_fibhl236 = na
+
+showfibhl = input.bool(false, title = '', group = 'Prev Day Range', inline = 'pd00')
+
+
+if showfibhl and timeframe.isintraday
+
+    line.delete(ln_fibhlhi)
+    ln_fibhlhi := line.new(pdprevbar, fibhlhi, pdprevbar + 10, fibhlhi, color = clr_fibhl, style = line.style_dashed, extend = extend.none)
+    line.delete(ln_fibhllo)
+    ln_fibhllo := line.new(pdprevbar, fibhllo, pdprevbar + 10, fibhllo, color = clr_fibhl, style = line.style_dashed, extend = extend.none)
+    line.delete(ln_fibhl618)
+    ln_fibhl618 := line.new(pdprevbar, fibhl618, pdprevbar + 10, fibhl618, color = clr_fibhl, style = line.style_dashed, extend = extend.none)
+    line.delete(ln_fibhl382)
+    ln_fibhl382 := line.new(pdprevbar, fibhl382, pdprevbar + 10, fibhl382, color = clr_fibhl, style = line.style_dashed, extend = extend.none)
+    ln_fibhl382
+    //line.delete(ln_fibhl236)
+    //ln_fibhl236 := line.new(pdprevbar, fibhl236, pdprevbar+10,fibhl236,color=clr_fibhl, style=line.style_dashed, extend = extend.none)
+
+line.set_x2(ln_fibhlhi, newpos)
+line.set_x2(ln_fibhllo, newpos)
+line.set_x2(ln_fibhl618, newpos)
+line.set_x2(ln_fibhl382, newpos)
+line.set_x2(ln_fibhl236, newpos)
+
+// previous day high to low fib end 
+
+
+// 20 percent change Fib (circuit limits)
+fib20hi = pdclose * 1.2
+fib20lo = pdclose * 0.8
+
+change_46_level = pdclose * 1.04618 // previous day's close * 1.04618%
+
+// 18 percent change level 
+_18plevel = pdclose * 1.18
+
+fib20618 = (fib20hi - fib20lo) * .618 + fib20lo
+
+showfib20 = input.bool(true, title = '', group = '20% Circuit Limit Fib', inline = 'pd00')
+fib20clr = input.color(defval = #fed346, title = '', group = '20% Circuit Limit Fib', inline = 'pd00')
+
+var line ln_change_46_level = na
+var line lnfib20hi = na
+var line ln18plevel = na 
+
+if showfib20 and timeframe.isintraday
+    line.delete(ln18plevel)
+	ln18plevel := line.new(pdprevbar, _18plevel, pdprevbar+10,_18plevel,color=#525252, style=line.style_dotted, extend = extend.none)
+
+    line.delete(ln_change_46_level)
+    ln_change_46_level := line.new(pdprevbar, change_46_level, pdprevbar + 10, change_46_level, color = fib20clr, style = line.style_dotted, extend = extend.none)
+    
+    line.delete(lnfib20hi)
+    lnfib20hi := line.new(pdprevbar, fib20hi, pdprevbar + 10, fib20hi, color = fib20clr, style = line.style_solid, extend = extend.none)
+    lnfib20hi
+
+
+line.set_x2(ln18plevel,newpos)
+line.set_x2(ln_change_46_level, newpos)
+line.set_x2(lnfib20hi, newpos)
+
+// 10 percent change Fib (circuit limits)
+fib10hi = pdclose * 1.1
+fib10lo = pdclose * 0.9
+
+fib10618 = (fib10hi - fib10lo) * .618 + fib10lo
+fib10382 = (fib10hi - fib10lo) * .382 + fib10lo
+
+showfib10 = input.bool(true, title = '', group = '10% Circuit Limit Fib', inline = 'pd00')
+fib10clr = input.color(defval = #8fdf33, title = '', group = '10% Circuit Limit Fib', inline = 'pd00')
+
+var line lnfib10618 = na
+var line lnfib10382 = na
+var line lnfib10hi = na
+var line lnif382 = na
+
+if showfib10 and timeframe.isintraday
+    line.delete(lnfib10618)
+    lnfib10618 := line.new(pdprevbar, fib10618, pdprevbar + 10, fib10618, color = fib10clr, style = line.style_dotted, extend = extend.none)
+    //line.delete(lnfib10382)
+    //lnfib10382 := line.new(pdprevbar, fib10382, pdprevbar+10,fib10382,color=fib10clr, style=line.style_dotted, extend = extend.none)
+    line.delete(lnfib10hi)
+    lnfib10hi := line.new(pdprevbar, fib10hi, pdprevbar + 10, fib10hi, color = fib10clr, style = line.style_solid, extend = extend.none)
+
+    // fib 20 to fib 10 intermediate levels.
+    if382 = (fib20hi - fib10hi) * .382 + fib10hi
+    line.delete(lnif382)
+    lnif382 := line.new(pdprevbar, if382, pdprevbar + 10, if382, color = #8b0000, style = line.style_dotted, extend = extend.none)
+    lnif382
+
+line.set_x2(lnfib10618, newpos)
+line.set_x2(lnfib10382, newpos)
+line.set_x2(lnfib10hi, newpos)
+
+line.set_x2(lnif382, newpos)
+
+
+// 05 percent change Fib (circuit limits)
+fib05hi = pdclose * 1.05
+fib05lo = pdclose * 0.95
+
+fib05618 = (fib05hi - fib05lo) * .618 + fib05lo
+fib05382 = (fib05hi - fib05lo) * .382 + fib05lo
+//fib05236 = (fib05hi-fib05lo)*.236+fib05lo
+
+showfib05 = input.bool(false, title = '', group = '5% Circuit Limit Fib', inline = 'pd00')
+fib05clr = input.color(defval = #3378df, title = '', group = '5% Circuit Limit Fib', inline = 'pd00')
+
+var line lnfib05618 = na
+var line lnfib05382 = na
+//var line lnfib05236 = na 
+
+if showfib05 and timeframe.isintraday
+    line.delete(lnfib05618)
+    lnfib05618 := line.new(pdprevbar, fib05618, pdprevbar + 10, fib05618, color = fib05clr, style = line.style_dotted, extend = extend.none)
+    line.delete(lnfib05382)
+    lnfib05382 := line.new(pdprevbar, fib05382, pdprevbar + 10, fib05382, color = fib05clr, style = line.style_dotted, extend = extend.none)
+    lnfib05382
+    //line.delete(lnfib05236)
+    //lnfib05236 := line.new(pdprevbar, fib05236, pdprevbar+10,fib05236,color=fib05clr, style=line.style_dotted, extend = extend.none)
+
+
+line.set_x2(lnfib05618, newpos)
+line.set_x2(lnfib05382, newpos)
+//line.set_x2(lnfib05236,newpos)
+
+// fib of 10% high and 20% 618 level
+fib_gz_618 = (fib10hi - fib20618) * 0.618 + fib20618
+fib_gz_382 = (fib10hi - fib20618) * 0.382 + fib20618
+var box bx_fibgz = na
+if showfib10 and timeframe.isintraday
+    box.delete(bx_fibgz)
+    bx_fibgz := box.new(pdprevbar, fib_gz_618, bar_index, fib_gz_382, border_width = 0, bgcolor = color.rgb(119, 91, 0, 85))
+    bx_fibgz
+
+bx_fibgz.set_right(newpos)
+
+
+
+
+
+
+
+
+
