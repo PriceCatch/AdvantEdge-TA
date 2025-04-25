@@ -1,7 +1,8 @@
 // This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
 // © PriceCatch
-
 //@version=6
+// You must credit PriceCatch if you modify this code or use it in your scripts.
+
 indicator('PriceCatch - Previous Hour Range', overlay = true)
 
 // Input for box background color
