@@ -1,0 +1,22 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © PriceCatch
+
+//@version=6
+indicator('PriceCatch - Previous Hour Range', overlay = true)
+
+// Input for box background color
+bgColor = input(color.new(color.blue, 70), title = 'Box Background Color')
+
+
+var int prevh1bi = na
+var int currh1bi = na
+
+[h1highest, h1lowest, h1bi] = request.security(syminfo.tickerid, '60', [high, low, bar_index])
+
+var box bxh1 = na 
+if timeframe.change('60')
+    prevh1bi := currh1bi
+    currh1bi := bar_index
+    dist = currh1bi - prevh1bi
+    bxh1 := box.new(prevh1bi, h1highest, currh1bi, h1lowest, bgcolor = bgColor, border_width = 1, border_color = color.blue)
+    box.delete(bxh1[1])
